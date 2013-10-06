@@ -1,14 +1,19 @@
+host = 'http://mocket.in'
+#host = 'http://localhost:3000'
+access_token = localStorage.access_token
 chrome.extension.onMessage.addListener (message, sender, sendResponse) ->
   if message.method == 'postSong'
     _mp.req(
-      'http://localhost:3000/api/song',
+      "#{host}/api/song",
       ->,
       "POST",
       {
-        access_token: 'ysqXKXIFlSRBQHudHadfZPTHuQafDypd',
+        access_token: access_token,
         post: {search: unescape(message.data.search)}
       }
     )
+chrome.extension.getBackgroundPage().updateAccessToken = (token) ->
+  access_token = localStorage.access_token;
 
 _mp = _mp || {};
 
