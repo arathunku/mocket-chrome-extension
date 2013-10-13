@@ -1,52 +1,45 @@
 host = 'http://mocket.in'
 #host = 'http://localhost:3000'
-access_token = localStorage.access_token
-chrome.extension.onMessage.addListener (message, sender, sendResponse) ->
-  if message.method == 'postSong'
-    _mp.req(
+injectScript = (tabId, file)->
+  chrome.tabs.executeScript tabId, {file:"build/utils.js"}, ->
+    chrome.tabs.executeScript tabId, {file:"build/#{file}.js"}
+    debugger
+    chrome.tabs.executeScript tabId, { code: "var isLoaded = true;" }
+
+chrome.runtime.onMessage.addListener (message, sender, sendResponse) ->
+  rapi.postSong(message.data) if message.method == 'postSong'
+  if message.method == 'inject' && message.loaded == false
+    injectScript(message.tabId, message.file)
+
+chrome.runtime.getBackgroundPage (background) ->
+  background.updateAccessToken = (token) ->
+    access_token = localStorage.access_token;
+
+chrome.tabs.onUpdated.addListener (tabId, changeInfo, tab) ->
+  if changeInfo.status == 'complete'
+    chrome.tabs.query {'active': true, 'lastFocusedWindow': true}, (tabs) ->
+      return if tabs.length <= 0
+      url = tabs[0].url;
+      file = "facebook" if url.match(/\.facebook\./)
+      chrome.utils.d.log("111")
+      if file?
+        chrome.tabs.executeScript(tabId, {
+          code: "if(isLoaded){isLoaded=isLoaded}else{ var isLoaded=false;}
+            chrome.runtime.sendMessage({
+            loaded: isLoaded || false,
+            method: 'inject',
+            tabId: "+tabId+",
+            file: '"+file+"' });"
+        });
+
+rapi =
+  postSong: (data)->
+    chrome.utils.req(
       "#{host}/api/song",
       ->,
       "POST",
       {
-        access_token: access_token,
-        post: {search: unescape(message.data.search)}
+        access_token: localStorage.access_token,
+        post: {search: unescape(data.search)}
       }
     )
-chrome.extension.getBackgroundPage().updateAccessToken = (token) ->
-  access_token = localStorage.access_token;
-
-_mp = _mp || {};
-
-_mp.req = (url, callbackFunction, requestType) ->
-  @bindFunction = (caller, object) ->
-    return ->
-      return caller.apply(object, [object]);
-
-  @stateChange = (object) ->
-    if @request.readyState == 4
-      @callbackFunction(@request.responseText, @request.status);
-
-  @getRequest =  ->
-    if window.ActiveXObjec
-      new ActiveXObject('Microsoft.XMLHTTP');
-    else if (window.XMLHttpRequest)
-      new XMLHttpRequest();
-    else
-      false;
-  data = arguments[3] || "";
-  @postBody = JSON.stringify(data);
-
-  @callbackFunction = callbackFunction;
-  url = url;
-  @url = url;
-  @request = @getRequest();
-
-  if @request
-    req = this.request;
-    req.onreadystatechange = @bindFunction(@stateChange, this);
-    if @postBody != ""
-      req.open(requestType, url, true);
-      req.setRequestHeader('Content-type', 'application/json');
-    else
-      req.open("GET", url, true);
-    req.send(this.postBody);

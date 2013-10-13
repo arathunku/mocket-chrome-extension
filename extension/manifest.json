@@ -7,20 +7,21 @@
     "default_title": "Mocket"
   },
   "background": {
-    "scripts": ["build/background.js"]
+    "scripts": ["build/utils.js","build/background.js"],
+    "persistent": true
   },
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],
-      "js": ["build/main.js"],
+      "js": ["build/content.js"],
       "run_at": "document_end"
     }
   ],
   "options_page": "options.html",
   "permissions": [
-    "tabs" ,
-    "http://mocket.in/",
-    "http://localhot:3000/"
+      "tabs",
+      "http://*/*",
+      "https://*/*"
   ]
 }

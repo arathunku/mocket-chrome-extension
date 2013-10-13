@@ -10,7 +10,9 @@
 
   save.addEventListener('click', function() {
     localStorage.access_token = node.value;
-    return chrome.extension.getBackgroundPage().updateAccessToken();
+    return chrome.runtime.getBackgroundPage(function(background) {
+      return background.updateAccessToken();
+    });
   }, false);
 
 }).call(this);

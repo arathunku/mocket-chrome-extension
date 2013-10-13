@@ -5,7 +5,7 @@ fs = require 'fs'
 dst = 'extension/build/'
 src = 'src/'
 task 'watch', 'Build extension code into build/', ->
-  coffee = spawn "coffee", ["-w", "-c", "-o", dst, src ]
+  coffee = spawn "coffee", ["-w", "-c","-o", dst, src ]
   coffee.stderr.on 'data', (data) ->
     process.stderr.write data.toString()
   coffee.stdout.on 'data', (data) ->

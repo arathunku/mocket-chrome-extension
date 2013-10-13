@@ -3,5 +3,6 @@ node.value = localStorage.access_token || "no access_token"
 save = document.getElementById('save')
 save.addEventListener('click', ->
   localStorage.access_token = node.value
-  chrome.extension.getBackgroundPage().updateAccessToken()
+  chrome.runtime.getBackgroundPage (background) ->
+    background.updateAccessToken()
 ,false)
