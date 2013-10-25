@@ -58,12 +58,22 @@
       var MutationObserver, eventListenerSupported;
       MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
       eventListenerSupported = window.addEventListener;
-      return function(obj, callback) {
+      return function(obj, classes, callback) {
         var obs;
         if (MutationObserver) {
           obs = new MutationObserver(function(mutations, observer) {
-            if (mutations[0].addedNodes.length || mutations[0].removedNodes.length) {
-              return callback();
+            var klass, node, _i, _j, _len, _len1, _ref;
+            if (mutations[0].addedNodes.length) {
+              _ref = mutations[0].addedNodes;
+              for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                node = _ref[_i];
+                for (_j = 0, _len1 = classes.length; _j < _len1; _j++) {
+                  klass = classes[_j];
+                  if ((node.className || '').match(new RegExp(klass, 'gi'))) {
+                    return callback(obs);
+                  }
+                }
+              }
             }
           });
           return obs.observe(obj, {

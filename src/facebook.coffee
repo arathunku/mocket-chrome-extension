@@ -1,10 +1,14 @@
 facebook =
+  classes: ['uiUnifiedStory', 'uiStreamStory']
+  observe: ->
+    unless @observer
+      chrome.utils.observeDOM(document.body, @classes, (obs) =>
+        @refresh()
+      )
   start: ->
     chrome.utils.d.log('FB START')
-    chrome.utils.observeDOM(document.querySelector('body'), =>
-      @refresh()
-    )
     @refresh()
+    @observe()
   refresh: ->
     chrome.utils.d.log('Facebook refresh')
     nodes = document.getElementsByClassName('mainWrapper');
@@ -15,28 +19,48 @@ facebook =
       if !@alreadyAdded(node)
         element = @getSpotify(node) || @getYoutube(node)
         if element
-          action = node.getElementsByClassName('UIActionLinks')[0];
-          action.insertAdjacentHTML(
-            'beforeend',
-            '<a class="mocketLink" data-searchstring="'+escape(element)+'">Mocket It!</a> ·')
-          link = node.getElementsByClassName('mocketLink')[0]
-          chrome.utils.on('click', link, (evt)->
-            evt.preventDefault();
-            after_click = 'Mocketed!'
-            e = evt.toElement
-            return if e.innerText == after_click
-            search = e.getAttribute('data-searchstring')
-            e.innerText = after_click
-            chrome.runtime.sendMessage({
-              method: "postSong",
-              data: {search: search}
-            });
+          console.log("papeaisdpoa")
+          @inHistory(element, (exists) =>
+            if exists
+              console.log("createMocketNode")
+              @createMocketNode(node, '', "Mocketed!")
+            else
+              console.log("appendNode")
+              @appendAdder(node, element)
           )
+  createMocketNode: (node, element, text) ->
+    action = node.getElementsByClassName('UIActionLinks')[0];
+    action.insertAdjacentHTML(
+      'beforeend',
+      '<a class="mocketLink" data-searchstring="'+escape(element)+'">'+text+'</a> ·')
+
+  appendAdder: (node, element) ->
+    @createMocketNode(node, element, 'Mocket it!')
+    @bindAdder(node.getElementsByClassName('mocketLink')[0])
+
+  bindAdder: (node) ->
+    chrome.utils.on('click', node, (evt)->
+      evt.preventDefault();
+      after_click = 'Mocketed!'
+      e = evt.toElement
+      return if e.innerText == after_click
+      search = e.getAttribute('data-searchstring')
+      e.innerText = after_click
+      chrome.runtime.sendMessage({
+        method: "postSong",
+        data: {search: search}
+      });
+    )
 
   alreadyAdded: (obj)->
-    done = obj.innerHTML.match('Mocket It')
-    not_yet = obj.innerHTML.match('Mocketed!')
-    done && done.length > 0 || not_yet && not_yet.length > 0
+    debugger
+    obj.innerHTML.match(/Mocket it/ig) || obj.innerHTML.match(/Mocketed/ig)
+
+  inHistory: (string, callback) ->
+    chrome.runtime.sendMessage({
+      method: "searchHistory",
+      data: string
+    }, callback);
 
   getSpotify: (obj) ->
     if obj instanceof Node

@@ -2,16 +2,19 @@
 (function() {
   var host, injectScript, rapi;
 
-  host = 'http://mocket.in';
+  host = 'http://localhost:3000';
+
+  console.log("Extension loaded.");
 
   injectScript = function(tabId, file) {
+    tabId = tabId;
+    file = file;
     return chrome.tabs.executeScript(tabId, {
       file: "build/utils.js"
     }, function() {
       chrome.tabs.executeScript(tabId, {
         file: "build/" + file + ".js"
       });
-      debugger;
       return chrome.tabs.executeScript(tabId, {
         code: "var isLoaded = true;"
       });
@@ -21,6 +24,9 @@
   chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
     if (message.method === 'postSong') {
       rapi.postSong(message.data);
+    }
+    if (message.method === 'searchHistory') {
+      sendResponse(chrome.archive.search(message.data));
     }
     if (message.method === 'inject' && message.loaded === false) {
       return injectScript(message.tabId, message.file);
@@ -48,7 +54,6 @@
         if (url.match(/\.facebook\./)) {
           file = "facebook";
         }
-        chrome.utils.d.log("111");
         if (file != null) {
           return chrome.tabs.executeScript(tabId, {
             code: "if(isLoaded){isLoaded=isLoaded}else{ var isLoaded=false;}            chrome.runtime.sendMessage({            loaded: isLoaded || false,            method: 'inject',            tabId: " + tabId + ",            file: '" + file + "' });"
@@ -60,6 +65,7 @@
 
   rapi = {
     postSong: function(data) {
+      chrome.archive.push(unescape(data.search));
       return chrome.utils.req("" + host + "/api/song", function() {}, "POST", {
         access_token: localStorage.access_token,
         post: {
