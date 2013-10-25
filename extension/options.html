@@ -1,5 +1,31 @@
-<div>
-  <input type="text" id="access_token">
-  <button id="save">Save</button>
-</div>
-<script src="build/options.js"></script>
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" href="css/options.css">
+  </head>
+  <body>
+    <div class="wrapper-container">
+      <div class="container">
+        <div class="header clear">
+          <div class="brand inline ">
+            <a href="http://mocket.in" target="_blank">Mocket</a>
+          </div>
+          <div id="exit" class="pull-right inline pointer">Exit</div>
+        </div>
+
+        <div class="main">
+          <div class="hide" id="access-token-alert">
+             Get access token <a href="http://mocket.in/settings/api" target="_blank">here</a>.
+          </div>
+          <div>
+            <label for="access_token">Access_token:</label>
+            <input type="text" id="access_token" class="form-control inline">
+            <button id="save" class="btn">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="build/options.js"></script>
+  </body>
+</html>

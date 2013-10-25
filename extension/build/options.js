@@ -4,15 +4,28 @@
 
   node = document.getElementById('access_token');
 
-  node.value = localStorage.access_token || "no access_token";
+  node.value = localStorage.access_token || "";
+
+  if (node.value === "") {
+    document.getElementById('access-token-alert').className = "";
+  }
 
   save = document.getElementById('save');
 
   save.addEventListener('click', function() {
     localStorage.access_token = node.value;
-    return chrome.runtime.getBackgroundPage(function(background) {
+    chrome.runtime.getBackgroundPage(function(background) {
       return background.updateAccessToken();
     });
+    if (node.value === "") {
+      return document.getElementById('access-token-alert').className = "";
+    } else {
+      return document.getElementById('access-token-alert').className = "hide";
+    }
+  }, false);
+
+  document.querySelector('#exit').addEventListener('click', function() {
+    return open(location, '_self').close();
   }, false);
 
 }).call(this);
