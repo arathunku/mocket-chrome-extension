@@ -3,36 +3,34 @@ facebook =
   observe: ->
     unless @observer
       chrome.utils.observeDOM(document.body, @classes, (obs) =>
+        @observer = obs
         @refresh()
       )
+
   start: ->
     chrome.utils.d.log('FB START')
     @refresh()
     @observe()
+
   refresh: ->
     chrome.utils.d.log('Facebook refresh')
     nodes = document.getElementsByClassName('mainWrapper');
-    start = 0
-    end = nodes.length-1
-    for i in [start..end]
-      node = nodes[i]
+    for node in nodes
       if !@alreadyAdded(node)
         element = @getSpotify(node) || @getYoutube(node)
         if element
           console.log("papeaisdpoa")
-          @inHistory(element, (exists) =>
-            if exists
-              console.log("createMocketNode")
-              @createMocketNode(node, '', "Mocketed!")
-            else
-              console.log("appendNode")
-              @appendAdder(node, element)
-          )
+          if chrome.archive.search(element)
+            @createMocketNode(node, '', "Mocketed!")
+          else
+            @appendAdder(node, element) if !@alreadyAdded(node)
+
   createMocketNode: (node, element, text) ->
-    action = node.getElementsByClassName('UIActionLinks')[0];
-    action.insertAdjacentHTML(
-      'beforeend',
-      '<a class="mocketLink" data-searchstring="'+escape(element)+'">'+text+'</a> ·')
+    action = node.getElementsByClassName('UIActionLinks')[0]
+    if action
+      action.insertAdjacentHTML(
+        'beforeend',
+        '<a class="mocketLink" data-searchstring="'+escape(element)+'">'+text+'</a> ·')
 
   appendAdder: (node, element) ->
     @createMocketNode(node, element, 'Mocket it!')
@@ -53,8 +51,7 @@ facebook =
     )
 
   alreadyAdded: (obj)->
-    debugger
-    obj.innerHTML.match(/Mocket it/ig) || obj.innerHTML.match(/Mocketed/ig)
+    obj.innerHTML.match(/Mocket\b/ig) || obj.innerHTML.match(/Mocketed/ig)
 
   inHistory: (string, callback) ->
     chrome.runtime.sendMessage({

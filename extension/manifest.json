@@ -9,7 +9,7 @@
   "background": {
     "scripts": [
       "build/utils.js",
-      "build/history.js",
+      "build/archive.js",
       "build/background.js"
     ],
     "persistent": true

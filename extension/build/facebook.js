@@ -8,6 +8,7 @@
       var _this = this;
       if (!this.observer) {
         return chrome.utils.observeDOM(document.body, this.classes, function(obs) {
+          _this.observer = obs;
           return _this.refresh();
         });
       }
@@ -18,28 +19,25 @@
       return this.observe();
     },
     refresh: function() {
-      var element, end, i, node, nodes, start, _i, _results,
-        _this = this;
+      var element, node, nodes, _i, _len, _results;
       chrome.utils.d.log('Facebook refresh');
       nodes = document.getElementsByClassName('mainWrapper');
-      start = 0;
-      end = nodes.length - 1;
       _results = [];
-      for (i = _i = start; start <= end ? _i <= end : _i >= end; i = start <= end ? ++_i : --_i) {
-        node = nodes[i];
+      for (_i = 0, _len = nodes.length; _i < _len; _i++) {
+        node = nodes[_i];
         if (!this.alreadyAdded(node)) {
           element = this.getSpotify(node) || this.getYoutube(node);
           if (element) {
             console.log("papeaisdpoa");
-            _results.push(this.inHistory(element, function(exists) {
-              if (exists) {
-                console.log("createMocketNode");
-                return _this.createMocketNode(node, '', "Mocketed!");
+            if (chrome.archive.search(element)) {
+              _results.push(this.createMocketNode(node, '', "Mocketed!"));
+            } else {
+              if (!this.alreadyAdded(node)) {
+                _results.push(this.appendAdder(node, element));
               } else {
-                console.log("appendNode");
-                return _this.appendAdder(node, element);
+                _results.push(void 0);
               }
-            }));
+            }
           } else {
             _results.push(void 0);
           }
@@ -52,7 +50,9 @@
     createMocketNode: function(node, element, text) {
       var action;
       action = node.getElementsByClassName('UIActionLinks')[0];
-      return action.insertAdjacentHTML('beforeend', '<a class="mocketLink" data-searchstring="' + escape(element) + '">' + text + '</a> ·');
+      if (action) {
+        return action.insertAdjacentHTML('beforeend', '<a class="mocketLink" data-searchstring="' + escape(element) + '">' + text + '</a> ·');
+      }
     },
     appendAdder: function(node, element) {
       this.createMocketNode(node, element, 'Mocket it!');
@@ -78,8 +78,7 @@
       });
     },
     alreadyAdded: function(obj) {
-      debugger;
-      return obj.innerHTML.match(/Mocket it/ig) || obj.innerHTML.match(/Mocketed/ig);
+      return obj.innerHTML.match(/Mocket\b/ig) || obj.innerHTML.match(/Mocketed/ig);
     },
     inHistory: function(string, callback) {
       return chrome.runtime.sendMessage({
