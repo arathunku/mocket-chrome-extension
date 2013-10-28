@@ -38,13 +38,15 @@ chrome.utils =
   observeDOM: (->
     MutationObserver = window.MutationObserver || window.WebKitMutationObserver
     eventListenerSupported = window.addEventListener;
-    return (obj, callback) ->
+    return (obj, classes, callback) ->
       if MutationObserver
         obs = new MutationObserver( (mutations, observer) ->
-          if mutations[0].addedNodes.length || mutations[0].removedNodes.length
-            callback();
+          if mutations[0].addedNodes.length
+            for node in mutations[0].addedNodes
+              for klass in classes
+                return callback(obs) if (node.className||'').match(new RegExp(klass, 'gi'))
         )
-        obs.observe( obj, { childList:true, subtree:true });
+        obs.observe( obj, { childList:true, subtree: true});
       else if eventListenerSupported
         obj.addEventListener('DOMNodeInserted', callback, false);
         obj.addEventListener('DOMNodeRemoved', callback, false);
