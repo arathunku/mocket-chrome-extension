@@ -16,18 +16,21 @@
       _ref = chrome.archive.storage.elements;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         element = _ref[_i];
-        if (element === string) {
+        if (element === string || element === escape(string)) {
           return true;
         }
       }
       return false;
     },
     push: function(string) {
-      chrome.archive.storage.elements.push(string);
-      return chrome.runtime.sendMessage({
-        method: "setSongsHistory",
-        newData: chrome.archive.storage
-      });
+      debugger;
+      if (!this.search(string)) {
+        chrome.archive.storage.elements.push(string);
+        return chrome.runtime.sendMessage({
+          method: "pushToSongsHistory",
+          search: string
+        });
+      }
     },
     sync: function() {
       return chrome.utils.d.log("sync");

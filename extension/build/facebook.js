@@ -28,7 +28,6 @@
         if (!this.alreadyAdded(node)) {
           element = this.getSpotify(node) || this.getYoutube(node);
           if (element) {
-            console.log("papeaisdpoa");
             if (chrome.archive.search(element)) {
               _results.push(this.createMocketNode(node, '', "Mocketed!"));
             } else {
@@ -69,6 +68,7 @@
         }
         search = e.getAttribute('data-searchstring');
         e.innerText = after_click;
+        chrome.archive.push(search);
         return chrome.runtime.sendMessage({
           method: "postSong",
           data: {

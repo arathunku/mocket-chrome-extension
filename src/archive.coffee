@@ -7,12 +7,14 @@ chrome.archive =
 
   search: (string) ->
     for element in chrome.archive.storage.elements
-      return true if element == string
+      return true if element == string || element == escape(string)
     return false
 
   push: (string) ->
-    chrome.archive.storage.elements.push(string)
-    chrome.runtime.sendMessage({method:"setSongsHistory", newData: chrome.archive.storage});
+    debugger
+    unless @search(string)
+      chrome.archive.storage.elements.push(string)
+      chrome.runtime.sendMessage({method:"pushToSongsHistory", search: string});
 
   sync: ->
     chrome.utils.d.log("sync")

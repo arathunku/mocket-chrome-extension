@@ -19,7 +19,6 @@ facebook =
       if !@alreadyAdded(node)
         element = @getSpotify(node) || @getYoutube(node)
         if element
-          console.log("papeaisdpoa")
           if chrome.archive.search(element)
             @createMocketNode(node, '', "Mocketed!")
           else
@@ -44,6 +43,7 @@ facebook =
       return if e.innerText == after_click
       search = e.getAttribute('data-searchstring')
       e.innerText = after_click
+      chrome.archive.push(search)
       chrome.runtime.sendMessage({
         method: "postSong",
         data: {search: search}
