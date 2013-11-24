@@ -43,8 +43,10 @@ chrome.utils =
         obs = new MutationObserver( (mutations, observer) ->
           if mutations[0].addedNodes.length
             for node in mutations[0].addedNodes
-              for klass in classes
-                return callback(obs) if (node.className||'').match(new RegExp(klass, 'gi'))
+              if node.nodeName == "DIV"
+                return callback(obs)
+              # for klass in classes
+                # if (node.className||'').match(new RegExp(klass, 'gi'))
         )
         obs.observe( obj, { childList:true, subtree: true});
       else if eventListenerSupported

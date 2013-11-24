@@ -23,7 +23,6 @@
       return false;
     },
     push: function(string) {
-      debugger;
       if (!this.search(string)) {
         chrome.archive.storage.elements.push(string);
         return chrome.runtime.sendMessage({

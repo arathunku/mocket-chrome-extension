@@ -3,11 +3,12 @@
   var facebook;
 
   facebook = {
-    classes: ['uiUnifiedStory', 'uiStreamStory'],
+    after_click: ' · Mocketed!',
+    before_click: ' · Mocket it!',
     observe: function() {
       var _this = this;
       if (!this.observer) {
-        return chrome.utils.observeDOM(document.body, this.classes, function(obs) {
+        return chrome.utils.observeDOM(document.body, [], function(obs) {
           _this.observer = obs;
           return _this.refresh();
         });
@@ -21,7 +22,10 @@
     refresh: function() {
       var element, node, nodes, _i, _len, _results;
       chrome.utils.d.log('Facebook refresh');
-      nodes = document.getElementsByClassName('mainWrapper');
+      nodes = document.querySelectorAll('*[data-timestamp]');
+      if (!nodes.length) {
+        nodes = document.querySelectorAll('.mainWrapper');
+      }
       _results = [];
       for (_i = 0, _len = nodes.length; _i < _len; _i++) {
         node = nodes[_i];
@@ -29,7 +33,7 @@
           element = this.getSpotify(node) || this.getYoutube(node);
           if (element) {
             if (chrome.archive.search(element)) {
-              _results.push(this.createMocketNode(node, '', "Mocketed!"));
+              _results.push(this.createMocketNode(node, '', this.after_click));
             } else {
               if (!this.alreadyAdded(node)) {
                 _results.push(this.appendAdder(node, element));
@@ -48,26 +52,27 @@
     },
     createMocketNode: function(node, element, text) {
       var action;
-      action = node.getElementsByClassName('UIActionLinks')[0];
+      action = node.querySelector('.livetimestamp').parentNode.parentNode;
       if (action) {
-        return action.insertAdjacentHTML('beforeend', '<a class="mocketLink" data-searchstring="' + escape(element) + '">' + text + '</a> ·');
+        return action.insertAdjacentHTML('beforeend', '<a class="mocketLink" style="color: #6D84B4;"\
+          data-searchstring="' + escape(element) + '">' + text + '</a>');
       }
     },
     appendAdder: function(node, element) {
-      this.createMocketNode(node, element, 'Mocket it!');
-      return this.bindAdder(node.getElementsByClassName('mocketLink')[0]);
+      this.createMocketNode(node, element, this.before_click);
+      return this.bindAdder(node.querySelector('.mocketLink'));
     },
     bindAdder: function(node) {
+      var _this = this;
       return chrome.utils.on('click', node, function(evt) {
-        var after_click, e, search;
+        var e, search;
         evt.preventDefault();
-        after_click = 'Mocketed!';
         e = evt.toElement;
-        if (e.innerText === after_click) {
+        if (e.innerText === _this.after_click) {
           return;
         }
         search = e.getAttribute('data-searchstring');
-        e.innerText = after_click;
+        e.innerText = _this.after_click;
         chrome.archive.push(search);
         return chrome.runtime.sendMessage({
           method: "postSong",
@@ -105,7 +110,7 @@
       }
       match = string.match(regexp);
       if (match && match.length > 0) {
-        e = obj.getElementsByClassName('uiAttachmentTitle')[0];
+        e = obj.querySelector('.fwb') || obj.querySelector('.uiAttachmentTitle');
         if (e) {
           return e.innerText;
         }

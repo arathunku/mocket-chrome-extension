@@ -11,7 +11,6 @@ chrome.archive =
     return false
 
   push: (string) ->
-    debugger
     unless @search(string)
       chrome.archive.storage.elements.push(string)
       chrome.runtime.sendMessage({method:"pushToSongsHistory", search: string});

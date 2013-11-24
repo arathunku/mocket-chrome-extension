@@ -20,7 +20,7 @@
         url: "options.html"
       });
     } else if (details.reason === "update") {
-      return console.log("Updated from " + details.previousVersion + " to " + thisVersion + ".");
+      return console.log("Updated from " + details.previousVersion + " to " + details.thisVersion + ".");
     }
   });
 
@@ -50,6 +50,7 @@
   };
 
   chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+    var error;
     if (message.method === 'postSong') {
       rapi.postSong(message.data);
     }
@@ -57,7 +58,12 @@
       injectScript(message.tabId, message.file);
     }
     if (message.method === 'pushToSongsHistory') {
-      return pushToSongsHistory(message.search);
+      pushToSongsHistory(message.search);
+    }
+    try {
+      return sendResponse({});
+    } catch (_error) {
+      error = _error;
     }
   });
 
@@ -69,24 +75,13 @@
   });
 
   chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-    if (changeInfo.status === 'complete') {
-      return chrome.tabs.query({
-        'active': true,
-        'lastFocusedWindow': true
-      }, function(tabs) {
-        var file, url;
-        if (tabs.length <= 0) {
-          return;
-        }
-        url = tabs[0].url;
-        if (url.match(/\.facebook\./)) {
-          file = "facebook";
-        }
-        if (file != null) {
-          return chrome.tabs.executeScript(tabId, {
-            code: "if(isLoaded){isLoaded=isLoaded}else{ var isLoaded=false;}            chrome.runtime.sendMessage({            loaded: isLoaded || false,            method: 'inject',            tabId: " + tabId + ",            file: '" + file + "' });"
-          });
-        }
+    var file;
+    if (tab.url.match(/\.facebook\./)) {
+      file = "facebook";
+    }
+    if (file != null) {
+      return chrome.tabs.executeScript(tabId, {
+        code: "if(isLoaded){isLoaded=isLoaded}else{ var isLoaded=false;}        chrome.runtime.sendMessage({        loaded: isLoaded || false,        method: 'inject',        tabId: " + tabId + ",        file: '" + file + "' });"
       });
     }
   });

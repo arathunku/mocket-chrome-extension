@@ -1,8 +1,9 @@
 facebook =
-  classes: ['uiUnifiedStory', 'uiStreamStory']
+  after_click: ' · Mocketed!'
+  before_click: ' · Mocket it!'
   observe: ->
     unless @observer
-      chrome.utils.observeDOM(document.body, @classes, (obs) =>
+      chrome.utils.observeDOM(document.body, [], (obs) =>
         @observer = obs
         @refresh()
       )
@@ -14,35 +15,36 @@ facebook =
 
   refresh: ->
     chrome.utils.d.log('Facebook refresh')
-    nodes = document.getElementsByClassName('mainWrapper');
+    nodes = document.querySelectorAll('*[data-timestamp]')
+    nodes = document.querySelectorAll('.mainWrapper') unless nodes.length
     for node in nodes
       if !@alreadyAdded(node)
         element = @getSpotify(node) || @getYoutube(node)
         if element
           if chrome.archive.search(element)
-            @createMocketNode(node, '', "Mocketed!")
+            @createMocketNode(node, '', @after_click)
           else
             @appendAdder(node, element) if !@alreadyAdded(node)
 
   createMocketNode: (node, element, text) ->
-    action = node.getElementsByClassName('UIActionLinks')[0]
+    action = node.querySelector('.livetimestamp').parentNode.parentNode
     if action
       action.insertAdjacentHTML(
         'beforeend',
-        '<a class="mocketLink" data-searchstring="'+escape(element)+'">'+text+'</a> ·')
+        '<a class="mocketLink" style="color: #6D84B4;"
+          data-searchstring="'+escape(element)+'">'+text+'</a>')
 
   appendAdder: (node, element) ->
-    @createMocketNode(node, element, 'Mocket it!')
-    @bindAdder(node.getElementsByClassName('mocketLink')[0])
+    @createMocketNode(node, element, @before_click)
+    @bindAdder(node.querySelector('.mocketLink'))
 
   bindAdder: (node) ->
-    chrome.utils.on('click', node, (evt)->
+    chrome.utils.on('click', node, (evt) =>
       evt.preventDefault();
-      after_click = 'Mocketed!'
       e = evt.toElement
-      return if e.innerText == after_click
+      return if e.innerText == @after_click
       search = e.getAttribute('data-searchstring')
-      e.innerText = after_click
+      e.innerText = @after_click
       chrome.archive.push(search)
       chrome.runtime.sendMessage({
         method: "postSong",
@@ -73,7 +75,8 @@ facebook =
       string = obj.innerText
     match = string.match(regexp)
     if match && match.length > 0
-      e = obj.getElementsByClassName('uiAttachmentTitle')[0]
+      e = obj.querySelector('.fwb') ||
+        obj.querySelector('.uiAttachmentTitle')
       return e.innerText if e
     return null
 

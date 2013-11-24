@@ -10,7 +10,7 @@ chrome.runtime.onInstalled.addListener (details) ->
     if details.reason == "install"
       chrome.tabs.create({url: "options.html"})
     else if details.reason == "update"
-      console.log("Updated from #{details.previousVersion} to #{thisVersion}.")
+      console.log("Updated from #{details.previousVersion} to #{details.thisVersion}.")
 
 
 injectScript = (tabId, file)->
@@ -28,26 +28,25 @@ chrome.runtime.onMessage.addListener (message, sender, sendResponse) ->
   if message.method == 'inject' && message.loaded == false
     injectScript(message.tabId, message.file)
   pushToSongsHistory(message.search) if message.method == 'pushToSongsHistory'
+  try
+    sendResponse({}) #cleanup
+  catch error
 
 chrome.runtime.getBackgroundPage (background) ->
   background.updateAccessToken = (token) ->
     access_token = localStorage.access_token;
 
 chrome.tabs.onUpdated.addListener (tabId, changeInfo, tab) ->
-  if changeInfo.status == 'complete'
-    chrome.tabs.query {'active': true, 'lastFocusedWindow': true}, (tabs) ->
-      return if tabs.length <= 0
-      url = tabs[0].url;
-      file = "facebook" if url.match(/\.facebook\./)
-      if file?
-        chrome.tabs.executeScript(tabId, {
-          code: "if(isLoaded){isLoaded=isLoaded}else{ var isLoaded=false;}
-            chrome.runtime.sendMessage({
-            loaded: isLoaded || false,
-            method: 'inject',
-            tabId: "+tabId+",
-            file: '"+file+"' });"
-        });
+  file = "facebook" if tab.url.match(/\.facebook\./)
+  if file?
+    chrome.tabs.executeScript(tabId, {
+      code: "if(isLoaded){isLoaded=isLoaded}else{ var isLoaded=false;}
+        chrome.runtime.sendMessage({
+        loaded: isLoaded || false,
+        method: 'inject',
+        tabId: "+tabId+",
+        file: '"+file+"' });"
+    });
 
 rapi =
   postSong: (data)->
