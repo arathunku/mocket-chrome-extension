@@ -1,4 +1,5 @@
 chrome.utils = chrome.utils || {}
+
 chrome.utils =
   req: (url, callbackFunction, requestType) ->
     @bindFunction = (caller, object) ->
@@ -34,6 +35,16 @@ chrome.utils =
       console.log(string) if true
     dir: (obj) ->
       console.dir(string) if true
+
+  qa: (arg) ->
+    document.querySelectorAll(arg)
+
+  q: (arg) ->
+    document.querySelector(arg)
+
+  setStyle: ( node, propertyObject ) ->
+    for key in Object.keys(propertyObject)
+      node.style[key] = propertyObject[key]
 
   observeDOM: (->
     MutationObserver = window.MutationObserver || window.WebKitMutationObserver

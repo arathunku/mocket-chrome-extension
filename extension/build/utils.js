@@ -54,6 +54,22 @@
         }
       }
     },
+    qa: function(arg) {
+      return document.querySelectorAll(arg);
+    },
+    q: function(arg) {
+      return document.querySelector(arg);
+    },
+    setStyle: function(node, propertyObject) {
+      var key, _i, _len, _ref, _results;
+      _ref = Object.keys(propertyObject);
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        key = _ref[_i];
+        _results.push(node.style[key] = propertyObject[key]);
+      }
+      return _results;
+    },
     observeDOM: (function() {
       var MutationObserver, eventListenerSupported;
       MutationObserver = window.MutationObserver || window.WebKitMutationObserver;

@@ -79,6 +79,7 @@
     if (tab.url.match(/\.facebook\./)) {
       file = "facebook";
     }
+    file || (file = "tooltips");
     if (file != null) {
       return chrome.tabs.executeScript(tabId, {
         code: "if(isLoaded){isLoaded=isLoaded}else{ var isLoaded=false;}        chrome.runtime.sendMessage({        loaded: isLoaded || false,        method: 'inject',        tabId: " + tabId + ",        file: '" + file + "' });"

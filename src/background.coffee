@@ -38,6 +38,7 @@ chrome.runtime.getBackgroundPage (background) ->
 
 chrome.tabs.onUpdated.addListener (tabId, changeInfo, tab) ->
   file = "facebook" if tab.url.match(/\.facebook\./)
+  file ||= "tooltips"
   if file?
     chrome.tabs.executeScript(tabId, {
       code: "if(isLoaded){isLoaded=isLoaded}else{ var isLoaded=false;}
